@@ -45,14 +45,16 @@ function upsertPatient() {
     };
     if (patientId && patientId.value) {
         entry.resource.id = patientId.value;
-        pt.api.update(entry).then((response) => {
+        smart.api.update(entry).then((response) => {
             console.log('response', response);
+            alert('Patient Updated see console');
         }, (err) => {
             console.log('err', err);
         });
     } else {
-        pt.api.create(entry).then((response) => {
+        smart.api.create(entry).then((response) => {
             console.log('response', response);
+            alert('Patient Added see console');
         }, (err) => {
             console.log('err', err);
         });
@@ -95,6 +97,7 @@ function deletePatient() {
         };
         smart.api.delete(entry).then((pt) => {
             console.log('pt delete', pt);
+            alert('Patient Deleted see console');
         });
     }
 }
