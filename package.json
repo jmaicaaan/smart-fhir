@@ -1,0 +1,24 @@
+{
+  "name": "smart-fhir",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmaicaaan/smart-fhir.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jmaicaaan/smart-fhir/issues"
+  },
+  "homepage": "https://github.com/jmaicaaan/smart-fhir#readme",
+  "dependencies": {
+    "express": "^4.15.4",
+    "fhirclient": "^0.1.11"
+  }
+}

@@ -1,0 +1,80 @@
+<!DOCTYPE>
+<html>
+    <head>
+        <title>Smart on Fhir</title>
+        <style> 
+            .container {
+                display: grid;
+            }
+            .upsert {
+                grid-column: 1;
+                grid-row: 1;
+            }
+            .search {
+                grid-column: 2;
+                grid-row: 1;
+            }
+            .delete {
+                grid-column: 3;
+                grid-row: 1;
+            }
+        </style>
+    </head>
+    <body>
+        <h1> Smart on Fhir </h1>
+
+        <div class="container">
+            <div class="upsert">
+                <h2> Add/Update Patient </h2>
+                <div>
+                    Patient ID
+                    <input type="text" id="patient_id" name="patient_id" placeholder="patient_id">
+                </div>
+                <div>
+                    Firstname
+                    <input type="text" id="firstname" name="firstname" placeholder="firstname" required>
+                </div>
+                <div>
+                    Lastname
+                    <input type="text" id="lastname" name="lastname" placeholder="lastname" required>
+                </div>
+                <div>
+                    <p> Gender </p>
+                    <input type="radio" id="rb_male" name="gender" value="male"> Male
+                    <input type="radio" id="rb_female" name="gender" value="female"> Female
+                </div>
+                <br/>
+                <button onclick="upsertPatient()"> Add/Update Patient </button>
+            </div>
+
+            <div class="search">
+                <h2> Search Patient </h2>
+                <div>
+                    <h3> Search by Patient id </h3>
+                    <input type="text" id="s_patient_id" name="patient_id" placeholder="Patient ID" required>
+                    <button onclick="searchPatient('id')"> Search by Patient ID </button>
+                </div>
+                <div>
+                    <h3> Search by Patient name </h3>
+                    <input type="text" id="s_patient_name" name="patient_name" placeholder="Patient Name" required>
+                    <button onclick="searchPatient('name')"> Search by Patient name </button>
+                </div>
+                <div>
+                    <h4> Patient Search Results </h4>
+                    <pre class="patient-results"></pre>
+                </div>
+            </div>
+             
+            <div class="delete">
+                <h2> Delete Patient </h2>
+                <div>
+                    <h3> Delete Patient </h3>
+                    <input type="text" id="d_patient_id" name="d_patient_id" placeholder="Patient ID" required>
+                    <button onclick="deletePatient()"> Delete Patient </button>
+                </div>
+            </div>
+        </div>
+        <script src="./fhir-client.js"></script>
+        <script src="./index.js"></script>
+    </body>
+</html>
