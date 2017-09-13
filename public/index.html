@@ -44,9 +44,31 @@
                     <input type="radio" id="rb_female" name="gender" value="female"> Female
                 </div>
                 <br/>
-                <button class="btn btn-default" onclick="updatePatient()"> Update Patient </button>
+                <button class="btn btn-primary" onclick="updatePatient()"> Update Patient </button>
             </div>
-<!-- 
+            <div class="medication">
+                <h2>Appointment</h2>
+                <div class="form-group">
+                   The data is hard-coded only except for the time/date
+                </div>
+                <div>
+                    <ul id="patient-appointment-list"></ul>
+                </div>
+                <br/>
+                <button class="btn btn-primary" onclick="addPatientAppointment()"> Add Patient Appointment </button>
+            </div>
+            <div class="medication">
+                <h2>Medication</h2>
+                <div class="form-group">
+                    <label for="patient-medication">Patient Medication</label>
+                    <input type="text" id="patient-medication" class="form-control" name="patient-medication" placeholder="Patient Medication">
+                </div>
+                <br/>
+                <button class="btn btn-primary" onclick="test()"> Add Patient Medication </button>
+            </div>
+        </div>
+        <br/>
+<!--    
             <div class="search">
                 <h2> Search Patient </h2>
                 <div>
@@ -73,7 +95,6 @@
                     <button onclick="deletePatient()"> Delete Patient </button>
                 </div>
             </div> -->
-        </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
         <script src="./fhir-client.js"></script>
         <script src="./authenticate.js"></script>

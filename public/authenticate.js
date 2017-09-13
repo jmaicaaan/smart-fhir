@@ -55,9 +55,6 @@ $.ajax(options).done(function(res) {
             "Authorization": "Bearer " + accessToken
         },
     }).done(function(pt){
-        var name = pt.name[0].given.join(" ") +" "+ pt.name[0].family.join(" ");
-        document.body.innerHTML += "<h3>Patient: " + name + "</h3>";
-        alert(name)
     });
 });
 
