@@ -7,58 +7,88 @@ function init() {
     let config = getConnectionConfig();
     smart = FHIR.client(config, {});
     pt = smart.patient;
+    
+    loadPatient();
 }
 
 function getConnectionConfig() {
-    let serviceUrl = 'https://sb-fhir-dstu2.smarthealthit.org/api/smartdstu2/open';
-    let auth = {};
+    let serviceUrl = 'https://sb-fhir-dstu2.smarthealthit.org/api/smartdstu2/data';
+    let accessToken = localStorage.getItem('access_token');
+    let patientId = localStorage.getItem('patientId');
+    let auth = {
+        bearer: accessToken
+    };
     let headers = {};
     return {
         serviceUrl: serviceUrl,
         auth: auth,
-        headers: headers
+        headers: headers,
+        patientId: patientId
     };
 }
 
-function upsertPatient() {
-    let patientId = document.querySelector('#patient_id'),
-        firstname = document.querySelector('#firstname'),
+function loadPatient() {
+    let serviceUrl = 'https://sb-fhir-dstu2.smarthealthit.org/api/smartdstu2/data';
+    let patientId = localStorage.getItem('patientId');
+    let accessToken = localStorage.getItem('access_token');
+    var url = serviceUrl + "/Patient/" + patientId;
+    $.ajax({
+        url: url,
+        type: "GET",
+        dataType: "json",
+        headers: {
+            "Authorization": "Bearer " + accessToken
+        },
+    }).done(function(pt){
+        console.log('pt', pt);
+        var name = pt.name[0].given.join(" ") +" "+ pt.name[0].family.join(" ");
+        $('#patient_id').val(pt.id);
+        $('#firstname').val(pt.name[0].given)
+        $('#lastname').val(pt.name[0].family);
+        if (pt.gender) {
+            if (pt.gender === 'male') {
+                $('#rb_male').attr('checked', 'checked');
+            } else {
+                $('#rb_female').attr('checked', 'checked');
+            }
+        }
+    });
+}
+
+function updatePatient() {
+    let serviceUrl = 'https://sb-fhir-dstu2.smarthealthit.org/api/smartdstu2/data';
+    let patientId = localStorage.getItem('patientId');
+    let accessToken = localStorage.getItem('access_token');
+    let url = serviceUrl + "/Patient/" + patientId;
+    let firstname = document.querySelector('#firstname'),
         lastname = document.querySelector('#lastname'),
         gender = document.querySelector('input[type=radio]:checked');
-    
-    if (!firstname || !lastname || !gender) {
-        alert('Incomplete fields');
-        return;
-    }
     let entry = {
-        resource: {
-            resourceType: 'Patient',
-            gender: gender.value,
-            name: [
-                {
-                    'use': 'official',
-                    'family': lastname.value,
-                    'given': [firstname.value]
-                }
-            ]
-        },
+        resourceType: 'Patient',
+        id: patientId,
+        gender: gender.value,
+        name: [
+            {
+                'use': 'official',
+                'family': lastname.value,
+                'given': [firstname.value]
+            }
+        ]
     };
-    if (patientId && patientId.value) {
-        entry.resource.id = patientId.value;
-        smart.api.update(entry).then((response) => {
-            console.log('response', response);
-            alert('Patient Updated see console');
-        }, (err) => {
-            console.log('err', err);
-        });
-    } else {
-        smart.api.create(entry).then((response) => {
-            console.log('response', response);
-            alert('Patient Added see console');
-        }, (err) => {
-            console.log('err', err);
-        });
-    }
+    entry = JSON.stringify(entry);
+
+    $.ajax({
+        url: url,
+        method: 'PUT',
+        data: entry,
+        headers: {
+            "Authorization": "Bearer " + accessToken,
+            "Content-Type": "application/json"
+        },
+    }).done(function(pt) {
+        console.log('pt', pt);
+        alert('Successfully updated');
+    });
 }
 
 function searchPatient(type) {
