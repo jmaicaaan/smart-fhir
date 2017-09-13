@@ -11,6 +11,7 @@ function init() {
     
     loadPatient();
     getPatientAppointments();
+    getPatientMedicationRequest();
 }
 
 function getConnectionConfig() {
@@ -73,6 +74,10 @@ function updatePatient() {
     });
 }
 
+/**
+ * Medication Module
+ */
+
 function addPatientMedication() {
     let medication = $('#patient-medication').val();
     let entry = {
@@ -97,7 +102,23 @@ function addPatientMedication() {
             },
             manufacturer: {
                 reference: '#ph-org'
-            }
+            },
+            ingredient: [
+                {
+                    amount: {
+                        numerator: {
+                            value: 5,
+                            system: 'http://unitsofmeasure.org',
+                            code: 'mg'
+                        },
+                        denominator: {
+                            value: 1,
+                            system: 'http://hl7.org/fhir/v3/orderableDrugForm',
+                            code: 'TAB'
+                        }
+                    }
+                }
+            ]
         },
     };
     pt.api.create(entry).then((medication) => {
@@ -105,112 +126,96 @@ function addPatientMedication() {
     });
 }
 
-function test() {
-    console.log('smart', smart);
-
+function addMedicationRequest() {
     let entry = {
         resource: {
             resourceType: 'MedicationOrder',
             status: 'active',
-            intent: 'order',
-            priority: 'asap',
+            intent: 'proposal',
             medicationReference: {
-                reference: 'Medication/16711',
-                display: 'Medication ISBX'
+                reference: 'Medication/16711', //this reference from the added medication from addPatientMedication()
+                display: 'Medicine for ISBX Developers 50 MG Oral Tablet'
             },
-            subject: {
-                reference: 'Patient/' + pt.id,
-                display: 'JM Santos'
+            patient: {
+                reference: 'Patient/' + pt.id
             },
-            authoredOn: '2017-09-13',
             requester: {
                 agent: {
-                    reference: 'Practitioner/SMART-1234',
-                    display: 'John Smith'
+                    reference: 'Patient/SMART-1288992'
                 }
             },
-            onBehalfOf: {
-                reference: 'Organization/0fe781ca-464b-4649-a523-b4159d1cf614'
-            },
-            "reasonCode": [
+            substitution: {
+                allowed: true
+            }
+        }
+    }
+    pt.api.create(entry).then((response) => {
+        console.log('response med', response);=
+        getPatientMedicationRequest(true);
+    });
+}
+
+function addMedicationAdministration() {
+    let entry = {
+        resource: {
+            resourceType: 'MedicationAdministration',
+            status: 'in-progress',
+            contained: [
                 {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "11840006",
-                            "display": "Traveller's Diarrhea (disorder)"
-                        }
-                    ]
-                }
-            ],
-            "dosageInstruction": [
-                {
-                    "sequence": 1,
-                    "text": "500mg daily for 5 days",
-                    "additionalInstruction": [
-                        {
-                            "coding": [
-                                {
-                                    "system": "http://snomed.info/sct",
-                                    "code": "421984009",
-                                    "display": "Until finished - dosing instruction fragment (qualifier value)"
-                                }
-                            ]
-                        }
-                    ],
-                    "timing": {
-                        "repeat": {
-                            "frequency": 1,
-                            "period": 1,
-                            "periodUnit": "d"
-                        }
-                    },
-                    "route": {
-                        "coding": [
+                    resourceType: 'Medication',
+                    id: 'med-isbx',
+                    code: {
+                        coding: [
                             {
-                                "system": "http://snomed.info/sct",
-                                "code": "26643006",
-                                "display": "Oral Route (qualifier value)"
+                                system: 'http://hl7.org/fhir/sid/ndc',
+                                code: '0069-2587-10',
+                                display: 'Vancomycin Hydrochloride (VANCOMYCIN HYDROCHLORIDE)'
                             }
                         ]
-                    },
-                    "doseQuantity": {
-                        "value": 500,
-                        "unit": "mg",
-                        "system": "http://unitsofmeasure.org",
-                        "code": "mg"
                     }
                 }
             ],
-            "dispenseRequest": {
-                "validityPeriod": {
-                    "start": "2015-01-15",
-                    "end": "2016-01-15"
-                },
-                "quantity": {
-                    "value": 5,
-                    "unit": "Tab",
-                    "system": "http://hl7.org/fhir/v3/orderableDrugForm",
-                    "code": "Tab"
-                },
-                "expectedSupplyDuration": {
-                    "value": 5,
-                    "unit": "days",
-                    "system": "http://unitsofmeasure.org",
-                    "code": "d"
+            medicationReference: {
+                reference: '#med-isbx'
+            },
+            subject: {
+                reference: 'Patient/' + pt.id,
+                display: _patient.name[0].given + _patient.name[0].family
+            },
+            performer: [
+                {
+                    actor: {
+                        reference: 'Patient/' + pt.id
+                    }
                 }
-            }
+            ]
         }
     };
 
-    pt.api.create(entry).then((messageRequest) => {
-        console.log('messageRequest', messageRequest);
-        smart.patient.api.fetchAllWithReferences({ type: "Appointment" }).then(function(results, refs) {
-            console.log('results', results);
-            console.log('refs', refs);
+    pt.api.create(entry).then((response) => {
+        console.log('response', response);
+    });
+}
+
+function getPatientMedicationRequest(refresh) {
+    if (refresh) $('#patient-medication-request-list').html('');
+    pt.api.fetchAllWithReferences({ type: 'MedicationOrder', query: { 
+        patient: pt.id
+     }}).then((medications) => {
+        medications.forEach((medication) => {
+            console.log('medication', medication.medicationCodeableConcept? medication.medicationCodeableConcept.text : medication.medicationReference.display);
+            if (medication && medication.medicationCodeableConcept) {
+                $('#patient-medication-request-list').append(`<li> ${medication.medicationCodeableConcept.text} </li>`);
+            } else if (medication && medication.medicationReference && medication.medicationReference.display) {
+                $('#patient-medication-request-list').append(`<li> ${medication.medicationReference.display} </li>`);
+            }
         });
     });
 }
+
+/**
+ * Appointment Module
+ */
 
 function addPatientAppointment() {
     let d = new Date();
@@ -255,23 +260,13 @@ function addPatientAppointment() {
 
 function getPatientAppointments(refresh) {
     if (refresh) $('#patient-appointment-list').html('');
-    pt.api.fetchAllWithReferences({ type: 'Appointment' }).then((results) => {
-        results.forEach((k) => {
-            console.log('', k);
-            if (k.description) {
-                $('#patient-appointment-list').append(`<li> ${k.description} -> ${k.start} - ${k.end} </li>`);
+    pt.api.fetchAllWithReferences({ type: 'Appointment', query: { 
+        patient: pt.id
+     }}).then((appointments) => {
+        appointments.forEach((appointment) => {
+            if (appointment.description) {
+                $('#patient-appointment-list').append(`<li> ${appointment.description} -> ${appointment.start} - ${appointment.end} </li>`);
             }
         });
-    });
-}
-
-
-function clearFields() {
-    document.querySelectorAll('input').forEach((k, v) => {
-        if (k.type === 'radio') {
-            k.value = k.defaultChecked;
-            return;
-        }
-        k.value = k.defaultValue;
     });
 }
