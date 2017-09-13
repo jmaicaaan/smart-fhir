@@ -35,7 +35,6 @@ function loadPatient() {
     pt.read().then((patient) => {
         console.log('patient', patient);
         _patient = patient;
-        var name = patient.name[0].given.join(" ") + " " + patient.name[0].family.join(" ");
         $('#patient_id').val(patient.id);
         $('#firstname').val(patient.name[0].given)
         $('#lastname').val(patient.name[0].family);
@@ -133,7 +132,7 @@ function addMedicationRequest() {
             status: 'active',
             intent: 'proposal',
             medicationReference: {
-                reference: 'Medication/16711', //this reference from the added medication from addPatientMedication()
+                reference: 'Medication/16711', //this reference from the added medication from addPatientMedication() testing purposes
                 display: 'Medicine for ISBX Developers 50 MG Oral Tablet'
             },
             patient: {
@@ -150,7 +149,7 @@ function addMedicationRequest() {
         }
     }
     pt.api.create(entry).then((response) => {
-        console.log('response med', response);=
+        console.log('response med', response);
         getPatientMedicationRequest(true);
     });
 }

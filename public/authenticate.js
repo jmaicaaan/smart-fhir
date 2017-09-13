@@ -39,23 +39,6 @@ $.ajax(options).done(function(res) {
 
     localStorage.setItem('access_token', accessToken);
     localStorage.setItem('patientId', patientId);
-
-    // and now we can use these to construct standard FHIR
-    // REST calls to obtain patient resources with the
-    // SMART on FHIR-specific authorization header...
-    // Let's, for example, grab the patient resource and
-    // print the patient name on the screen
-
-    var url = serviceUri + "/Patient/" + patientId;
-    $.ajax({
-        url: url,
-        type: "GET",
-        dataType: "json",
-        headers: {
-            "Authorization": "Bearer " + accessToken
-        },
-    }).done(function(pt){
-    });
 });
 
 // Convenience function for parsing of URL parameters
