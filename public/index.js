@@ -15,7 +15,7 @@ function init() {
 }
 
 function getConnectionConfig() {
-    const serviceUrl = 'https://sb-fhir-dstu2.smarthealthit.org/api/smartdstu2/data';
+    const serviceUrl = 'https://sb-fhir-stu3.smarthealthit.org/smartstu3/data';
     const patientId = localStorage.getItem('patientId');
     const accessToken = localStorage.getItem('access_token');
     let auth = {
@@ -126,9 +126,10 @@ function addPatientMedication() {
 }
 
 function addMedicationRequest() {
+    addPatientMedication();
     let entry = {
         resource: {
-            resourceType: 'MedicationOrder',
+            resourceType: 'MedicationRequest',
             status: 'active',
             intent: 'proposal',
             medicationReference: {
@@ -198,15 +199,14 @@ function addMedicationAdministration() {
 
 function getPatientMedicationRequest(refresh) {
     if (refresh) $('#patient-medication-request-list').html('');
-    pt.api.fetchAllWithReferences({ type: 'MedicationOrder', query: { 
+    pt.api.fetchAllWithReferences({ type: 'MedicationRequest', query: { 
         patient: pt.id
-     }}).then((medications) => {
+     }}, ['MedicationRequest.medicationReference']).then((medications) => {
         medications.forEach((medication) => {
-            console.log('medication', medication.medicationCodeableConcept? medication.medicationCodeableConcept.text : medication.medicationReference.display);
-            if (medication && medication.medicationCodeableConcept) {
-                $('#patient-medication-request-list').append(`<li> ${medication.medicationCodeableConcept.text} </li>`);
-            } else if (medication && medication.medicationReference && medication.medicationReference.display) {
-                $('#patient-medication-request-list').append(`<li> ${medication.medicationReference.display} </li>`);
+            if (medication && medication.code) {
+                $('#patient-medication-request-list').append(`<li> ${medication.code.text} </li>`);
+            } else if (medication && medication.code && medication.code.text) {
+                $('#patient-medication-request-list').append(`<li> ${medication.code.text} </li>`);
             }
         });
     });
@@ -225,6 +225,21 @@ function addPatientAppointment() {
         resource: {
             resourceType: 'Appointment',
             status: 'booked',
+            contained: [
+                {
+                    resourceType: 'Location',
+                    id: 'CORELOCATIONS2',
+                    code: {
+                        coding: [
+                            {
+                                system: 'http://isbx.com.ph',
+                                code: '123456789',
+                                display: 'ISBX Philippines'
+                            }
+                        ]
+                    }
+                }
+            ],
             priority: 5,
             description: 'Discussion regarding SMART on FHIR',
             start: startDate,
@@ -241,7 +256,7 @@ function addPatientAppointment() {
                 },
                 {
                     actor: {
-                        reference: 'Location/CORELOCATIONS2',
+                        reference: '#CORELOCATIONS2',
                         display: 'South Wing, 2nd floor' 
                     },
                     required: 'required',
