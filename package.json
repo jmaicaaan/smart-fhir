@@ -1,0 +1,18 @@
+{
+  "name": "smart",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "cidi",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.4",
+    "fhirclient": "^0.1.11",
+    "jsonwebtoken": "^8.0.1",
+    "node-jose": "^0.9.5",
+    "request": "^2.81.0"
+  }
+}

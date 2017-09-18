@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>FHIR</title>
+  </head>
+  <body>
+    <p>Loading...</p>
+    <script src="fhirclient/fhir-client.js"></script>
+    <script type="text/javascript">
+      FHIR.oauth2.authorize({
+        "client_id": "155af69d-0d08-4b3b-ad56-a5c5a81259c0",
+        "scope": "openid profile"
+      });
+    </script>
+  </body>
+</html>
