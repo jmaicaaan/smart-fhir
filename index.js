@@ -19,7 +19,7 @@ app.get('/', function (request, response) {
     initializeFHIR(data.access_token);
     patient.loadPatient(fhir, (err, data) => {
       if (err) throw err;
-      response.send('<pre>' + JSON.stringify(data) + '</pre>');
+      response.send('<pre>' + JSON.stringify(data.entry, null, '  ') + '</pre>');
     });
   });
 });

@@ -8,8 +8,8 @@ function loadPatient(fhir, callback) {
     }
     fhir.search({
         type: 'Patient'
-    }).then((data) => {
-        callback(null, data);
+    }).then((resp) => {
+        callback(null, resp.data);
     }).catch((error) => {
         callback(error, null)
     });
