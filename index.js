@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const mkfhir = require('fhir.js');
 const JSONWebKey = require('json-web-key');
 const fs = require('fs');
+const moment = require('moment');
 const config = require('./config.json');
 const patient = require('./resource/patient');
 
@@ -28,7 +29,7 @@ app.get('/', function (request, response) {
 });
 
 app.listen(server.port, server.domain, function () {
-  console.log(`Server listening at ${ server.domain }:${ server.port }`);
+  console.log(`Server listening at http://${ server.domain }:${ server.port }`);
 });
 
 
@@ -53,12 +54,14 @@ function initializeFHIR(accessToken) {
  * Returns the created JWT Claim object. Used by signJWTClaim(claim)
  */
 function createJWTClaimRequest() {
+  let exp = moment().add(5, 'minutes').unix();
+  let nonceString = 'YWxnIjoiUlMyNTYifQ';
   return {
     iss: clientId,
     sub: clientId,
     aud: config.aud,
-    exp: 1522568860,
-    jti: 'YWxnIjoiUlMyNTYifQ'
+    exp: exp,
+    jti: nonceString
   };
 }
 
