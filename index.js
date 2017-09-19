@@ -20,11 +20,12 @@ let fhir;
 app.get('/', function (request, response) {
   generateJWK();
   requestAccessToken((err, data) => {
-      initializeFHIR(data.access_token);
-      patient.loadPatient(fhir, (err, data) => {
-        if (err) throw err;
-        response.send('<pre>' + JSON.stringify(data) + '</pre>');
-      });
+    if (err) throw err;
+    initializeFHIR(data.access_token);
+    patient.loadPatient(fhir, (err, data) => {
+      if (err) throw err;
+      response.send('<pre>' + JSON.stringify(data) + '</pre>');
+    });
   });
 });
 
@@ -108,6 +109,7 @@ function requestAccessToken(callback) {
         callback(err, body);
       } catch (error) {
         console.log('parsing error');
+        callback(error, null);
       }
     }
   });
