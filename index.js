@@ -1,89 +1,140 @@
-const express = require("express");
-const request = require("request");
-const jwt = require("jsonwebtoken");
-const mkfhir = require("fhir.js");
-const JSONWebKey = require("json-web-key");
-const fs = require("fs");
+const express = require('express');
+const request = require('request');
+const jwt = require('jsonwebtoken');
+const mkfhir = require('fhir.js');
+const JSONWebKey = require('json-web-key');
+const fs = require('fs');
+const config = require('./config.json');
+const patient = require('./resource/patient');
 
 let app = express();
-
 let server = {
   port: 3000,
-  domain: "localhost"
+  domain: 'localhost'
 };
+let clientId = config.clientId;
+let fhir;
 
-let clientSecret = "AMJoV_D0jiJeptbBKhxMJCv5tab6CzisnFFU7aeiBZALNiBjPGKu24M07x9fxmCE4SGdlu8vNYN9cPhxDf_K0ko";
-let clientId = "8adbf510-2181-4ae3-afd6-277935b6b3cd";
 
-let claims = {
-  iss: clientId,
-  sub: clientId,
-  exp: 1522568860,
-  aud: "https://sb-auth.smarthealthit.orgtoken",
-  jti: "id123456"
-};
-
-let privateKey = fs.readFileSync("./src/keygen/id_rsa");
-
-let publicKey = fs.readFileSync("./src/keygen/id_rsa.pem");
-
-let JWKey = JSONWebKey.fromPEM(publicKey);
-
-let token = jwt.sign(claims, privateKey, {algorithm: "RS256"});
-
-let form = {
-  grant_type: "client_credentials",
-  scope: "online_access profile",
-  client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-  client_assertion: token
-};
-
-app.use(express.static("node_modules"));
-
-app.get("/", function (request, response) {
-  response.send(`Server listening at ${ server.domain }:${ server.port }`);
+app.get('/', function (request, response) {
+  generateJWK();
+  requestAccessToken((err, data) => {
+      initializeFHIR(data.access_token);
+      patient.loadPatient(fhir, (err, data) => {
+        if (err) throw err;
+        response.send('<pre>' + JSON.stringify(data) + '</pre>');
+      });
+  });
 });
 
 app.listen(server.port, server.domain, function () {
   console.log(`Server listening at ${ server.domain }:${ server.port }`);
 });
 
-request.post("https://sb-auth.smarthealthit.org/token", {form:form}, function (error, response, body) {
 
-  if (error) {
-    console.log("Error:", error);
+/**
+ * Initialize the FHIR object with the given access token
+ * @param {*} accessToken 
+ */
+function initializeFHIR(accessToken) {
+  if (!accessToken) {
+    console.log('no access token');
     return;
   }
-
-  let accessToken = JSON.parse(body).access_token;
-
-  console.log(body);
-
-  let client = mkfhir({
-    baseUrl: "https://sb-fhir-stu3.smarthealthit.org/smartstu3/data",
+  fhir = mkfhir({
+    baseUrl: config.baseUrl,
     auth: {
       bearer: accessToken
     }
   });
+}
 
-  app.get("/smart-patient", (request, response) => {
-    client.search({
-      type: "Patient"
-    }).then((data) => {
-      response.status(200).send("<pre>" + JSON.stringify(data) + "</pre>");
-    }).catch((error) => {
-      response.status(500).send(error);
-    });
+/**
+ * Returns the created JWT Claim object. Used by signJWTClaim(claim)
+ */
+function createJWTClaimRequest() {
+  return {
+    iss: clientId,
+    sub: clientId,
+    aud: config.aud,
+    exp: 1522568860,
+    jti: 'YWxnIjoiUlMyNTYifQ'
+  };
+}
+
+/**
+ * Create a token request form to be used when doing POST request for access token. Returns the token form
+ * 
+ * @param {*} clientAssertionToken - a signed JWT claim token
+ * 
+ */
+
+function createTokenRequestForm(clientAssertionToken) {
+  if (!clientAssertionToken) {
+    console.log('no client assertion token'); 
+    return;
+  };
+  let grantType = config.tokenForm.grantType;
+  let scope = config.tokenForm.scope;
+  let clientAssertionType = config.tokenForm.clientAssertionType;
+  return {
+    grant_type: grantType,
+    scope: scope,
+    client_assertion_type: clientAssertionType,
+    client_assertion: clientAssertionToken
+  };
+}
+
+/**
+ * Create a request for access token to the openId server
+ */
+function requestAccessToken(callback) {
+  let tokenURL = config.tokenURL;
+  let JWTClaimRequest = createJWTClaimRequest();
+  let clientAssertionToken = signJWTClaim(JWTClaimRequest);
+  let form = createTokenRequestForm(clientAssertionToken);
+
+  request.post(tokenURL, { 
+    form: form
+  }, (err, response, body) => {
+    if (err) throw err;
+    if (response.body) {
+      try {
+        let body = JSON.parse(response.body);
+        let accessToken = body.access_token;
+        callback(err, body);
+      } catch (error) {
+        console.log('parsing error');
+      }
+    }
   });
+}
 
-  app.get("/smart-appointment", (request, response) => {
-    client.search({
-      type: "Appointment"
-    }).then((data) => {
-      response.status(200).send("<pre>" + JSON.stringify(data) + "</pre>");
-    }).catch((error) => {
-      response.status(500).send(error);
-    });
-  });
+/**
+ * Used in openId - public key set 
+ */
+function generateJWK() {
+  let publicKey = fs.readFileSync(__dirname + '/src/keygen/id_rsa.pem');
+  let publicKeySet = JSONWebKey.fromPEM(publicKey);
+  console.log('Public key set ->', publicKeySet.toJSON());
+}
 
-});
+function getRSAPrivateKey() {
+  return fs.readFileSync(__dirname + '/src/keygen/id_rsa');
+}
+
+/**
+ * Return the signed token as JWT which will be use for requesting access token to the openId server
+ * @param {*} claim 
+ */
+function signJWTClaim(claim) {
+  if (!claim) {
+    console.log('no jwt claim'); 
+    return;
+  }
+  let privateKey = getRSAPrivateKey();
+  let alg = {
+    algorithm: 'RS256'
+  };
+  return jwt.sign(claim, privateKey, alg);
+}
