@@ -1,6 +1,7 @@
 const express = require("express");
 const request = require("request");
 const jwt = require("jsonwebtoken");
+const mkfhir = require("fhir.js");
 const fs = require("fs");
 
 let app = express();
@@ -28,7 +29,7 @@ let form = {
 //   aud: "https://sb-auth.smarthealthit.org/token"
 // };
 //
-// let key = fs.readFileSync('./src/keygen/id_rsa');
+// let key = fs.readFileSync("./src/keygen/id_rsa");
 //
 // let token = jwt.sign(claims, key, {algorithm: "RS256"});
 //
@@ -42,7 +43,7 @@ let form = {
 
 app.use(express.static("node_modules"));
 
-app.get('/', function (request, response) {
+app.get("/", function (request, response) {
   response.send(`Server listening at ${ server.domain }:${ server.port }`);
 });
 
@@ -51,6 +52,39 @@ app.listen(server.port, server.domain, function () {
 });
 
 request.post("https://sb-auth.smarthealthit.org/token", {form:form}, function (error, response, body) {
-  if (error) console.log(error);
-  console.log(body);
+
+  if (error) {
+    console.log("Error:", error);
+    return;
+  }
+
+  let accessToken = JSON.parse(body).access_token;
+
+  let client = mkfhir({
+    baseUrl: "https://sb-fhir-stu3.smarthealthit.org/smartstu3/data",
+    auth: {
+      bearer: accessToken
+    }
+  });
+
+  app.get("/smart-patient", (request, response) => {
+    client.search({
+      type: "Patient"
+    }).then((data) => {
+      response.status(200).send("<pre>" + JSON.stringify(data) + "</pre>");
+    }).catch((error) => {
+      response.status(500).send(error);
+    });
+  });
+
+  app.get("/smart-appointment", (request, response) => {
+    client.search({
+      type: "Appointment"
+    }).then((data) => {
+      response.status(200).send("<pre>" + JSON.stringify(data) + "</pre>");
+    }).catch((error) => {
+      response.status(500).send(error);
+    });
+  });
+
 });
