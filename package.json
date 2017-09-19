@@ -14,6 +14,7 @@
     "fhirclient": "^0.1.11",
     "json-web-key": "^0.3.0",
     "jsonwebtoken": "^8.0.1",
+    "moment": "^2.18.1",
     "request": "^2.81.0"
   }
 }

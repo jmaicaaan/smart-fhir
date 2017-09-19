@@ -2,6 +2,7 @@ const express = require("express");
 const request = require("request");
 const jwt = require("jsonwebtoken");
 const mkfhir = require("fhir.js");
+const moment = require("moment");
 const JSONWebKey = require("json-web-key");
 const fs = require("fs");
 
@@ -18,7 +19,7 @@ let clientId = "8adbf510-2181-4ae3-afd6-277935b6b3cd";
 let claims = {
   iss: clientId,
   sub: clientId,
-  exp: 1522568860,
+  exp: moment().add(5, "minutes").unix(),
   aud: "https://sb-auth.smarthealthit.orgtoken",
   jti: "id123456"
 };
