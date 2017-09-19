@@ -23,7 +23,13 @@
     "express": "^4.15.4",
     "fhir.js": "0.0.20",
     "fhirclient": "^0.1.11",
+<<<<<<< HEAD
     "nodemon": "^1.12.0",
+=======
+    "json-web-key": "^0.3.0",
+    "jsonwebtoken": "^8.0.1",
+    "node-rsa": "^0.4.2",
+>>>>>>> 9961064... Code cleanup
     "request": "^2.81.0"
   }
 }

@@ -1,0 +1,12 @@
+{
+    "aud": "https://sb-auth.smarthealthit.orgtoken",
+    "baseUrl": "https://sb-fhir-stu3.smarthealthit.org/smartstu3/data",
+    "clientSecret": "AMJoV_D0jiJeptbBKhxMJCv5tab6CzisnFFU7aeiBZALNiBjPGKu24M07x9fxmCE4SGdlu8vNYN9cPhxDf_K0ko",
+    "clientId": "c35be526-9c49-4c4d-a3f2-6079e79fa975",
+    "tokenURL": "https://sb-auth.smarthealthit.org/token",
+    "tokenForm": {
+        "grantType": "client_credentials",
+        "scope": "online_access profile",
+        "clientAssertionType": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+    }
+}
