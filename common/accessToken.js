@@ -8,7 +8,7 @@ const jwt = require('./jwt');
  *
  * @param {*} callback 
  */
-function requestToken(callback) {
+function getToken(callback) {
     let tokenUrl = config.tokenUrl;
     let signedClaim = jwt.signedClaim();
     let form = createTokenRequestForm(signedClaim);
@@ -54,5 +54,5 @@ function createTokenRequestForm(clientAssertionToken) {
   }
 
 module.exports = {
-    requestToken: requestToken
+    getToken: getToken
 };

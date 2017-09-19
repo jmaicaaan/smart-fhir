@@ -15,7 +15,7 @@ let fhir;
 
 app.get('/', function (request, response) {
   jwk.generate();
-  accessToken.requestToken((err, data) => {
+  accessToken.getToken((err, data) => {
     if (err) throw err;
     initializeFHIR(data.access_token);
     patient.loadPatient(fhir, (err, data) => {
