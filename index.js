@@ -14,7 +14,6 @@ let fhir;
 
 
 app.get('/', function (request, response) {
-  jwk.generate();
   accessToken.getToken((err, data) => {
     if (err) throw err;
     initializeFHIR(data.access_token);
@@ -26,6 +25,7 @@ app.get('/', function (request, response) {
 });
 
 app.listen(server.port, server.domain, function () {
+  jwk.generate();
   console.log(`Server listening at http://${ server.domain }:${ server.port }`);
 });
 
